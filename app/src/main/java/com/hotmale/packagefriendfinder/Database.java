@@ -1,5 +1,10 @@
 package com.hotmale.packagefriendfinder;
 
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TextView;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -9,9 +14,11 @@ import java.sql.Statement;
 /**
  * Created by savery on 6/3/15.
  */
-public class Database {
+public class Database extends AsyncTask<Void,Void,String> {
 
-    public static String doQuery() {
+
+    @Override
+    protected String doInBackground(Void... params) {
         String retval = "";
 
         try {
@@ -21,7 +28,7 @@ public class Database {
             retval = e.toString();
         }
 
-        String url = "jdbc:postgresql://c.xndr.me:5432/hotmale?user=hotmale&password=bigfart";
+        String url = "jdbc:postgresql://192.155.85.51:5432/hotmale?user=hotmale&password=bigfart";
         Connection conn;
 
         try {
@@ -50,7 +57,10 @@ public class Database {
         return retval;
     }
 
-//    protected void onPostExecute(String value) {
-//        resultArea.setText(value);
-//    }
+
+    protected void onPostExecute(String value) {
+        Button bb = new Button();
+        bb.setText(value);
+
+    }
 }

@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.os.AsyncTask;
+
 
 /**
  * Created by savery on 6/3/15.
@@ -24,8 +26,10 @@ public class FrontButt extends Fragment {
 
         LinearLayout ll = new LinearLayout(getActivity());
         Button b = new Button(getActivity());
-        b.setText(Database.doQuery());
+        b.setText("hello");
         ll.addView(b);
+
+        new Database().execute();
 
 
 
