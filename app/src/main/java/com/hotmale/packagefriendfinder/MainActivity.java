@@ -18,6 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+/** For sql */
+import android.os.AsyncTask;
+import java.sql.*;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -35,23 +38,73 @@ public class MainActivity extends ActionBarActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
+    TextView resultArea;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //super.onCreate(savedInstanceState);
+        //setContentView(R.layout.activity_main);
+
+        //// Create the adapter that will return a fragment for each of the three
+        //// primary sections of the activity.
+        //mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        //// Set up the ViewPager with the sections adapter.
+        //mViewPager = (ViewPager) findViewById(R.id.pager);
+        //mViewPager.setAdapter(mSectionsPagerAdapter);
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        resultArea = new TextView(this);
+        resultArea.setText("Please wait.");
+        setContentView(resultArea);
+        new FetchSQL().execute();
 
     }
 
+    private class FetchSQL extends AsyncTask<Void,Void,String> {
+
+        @Override
+        protected String doInBackground(Void... params) {
+            String retval = "";
+
+            try {
+                Class.forName("org.postgresql.Driver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                retval = e.toString();
+            }
+
+            String url = "jdbc:postgresql://192.155.85.51:5432/hotmale";
+
+            Connection conn;
+            try {
+                DriverManager.setLoginTimeout(5);
+                conn = DriverManager.getConnection(url, "hotmale", "bigfart");
+                Statement st = conn.createStatement();
+                String sql;
+                sql = "SELECT name from users";
+                ResultSet rs = st.executeQuery(sql);
+                while(rs.next()) {
+                    // columns are accessed by either their names or their column number
+                    retval = retval + ", " + rs.getString(1);
+                }
+                rs.close();
+                st.close();
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                retval = e.toString();
+            }
+
+            return retval;
+        }
+
+        @Override
+        protected void onPostExecute(String value) {
+            resultArea.setText(value);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
