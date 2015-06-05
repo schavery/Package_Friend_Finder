@@ -1,5 +1,7 @@
 package com.hotmale.packagefriendfinder;
 
+import android.os.AsyncTask;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,10 +10,13 @@ import java.sql.Statement;
 
 /**
  * Created by savery on 6/3/15.
+ * Now it's no longer default.
  */
-public class Database {
+public class Database extends AsyncTask<Void, Void, String> {
 
-    public static String doQuery() {
+    public AsyncResponse delegate = null;
+
+    protected String doInBackground(Void... params) {
         String retval = "";
 
         try {
@@ -30,11 +35,11 @@ public class Database {
             Statement st = conn.createStatement();
 
             String sql;
-            sql = "SELECT * from \"dummyTable\" WHERE id=1";
+            sql = "SELECT * from \"users\" WHERE 1=1";
 
             ResultSet rs = st.executeQuery(sql);
             while (rs.next()) {
-                retval = rs.getString("dataVal");
+                retval = rs.getString("name");
                 //int temp =
                 //retval = rs.getInt("dataVal");
             }
@@ -50,7 +55,7 @@ public class Database {
         return retval;
     }
 
-//    protected void onPostExecute(String value) {
-//        resultArea.setText(value);
-//    }
+    protected void onPostExecute(String value) {
+        delegate.processFinish(value);
+    }
 }

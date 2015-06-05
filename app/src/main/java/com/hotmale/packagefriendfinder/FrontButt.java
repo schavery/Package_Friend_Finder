@@ -13,23 +13,35 @@ import android.widget.ProgressBar;
 
 /**
  * Created by savery on 6/3/15.
+ * Same deal.
  */
-public class FrontButt extends Fragment {
+public class FrontButt extends Fragment implements AsyncResponse {
 
+    Button b;
+    Database db = new Database();
 
+    public void processFinish(String output) {
+        b.setText(output);
+    }
 
     public View onCreateView(LayoutInflater inflater,
             ViewGroup container,
             Bundle savedInstanceState) {
 
         LinearLayout ll = new LinearLayout(getActivity());
-        Button b = new Button(getActivity());
-        b.setText(Database.doQuery());
+        b = new Button(getActivity());
+        b.setText("Hi there");
         ll.addView(b);
 
-
+        db.execute();
 
         return ll;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        db.delegate = this;
     }
 
     /*
