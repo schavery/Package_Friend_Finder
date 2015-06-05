@@ -1,7 +1,6 @@
 package com.hotmale.packagefriendfinder;
 
 import android.os.AsyncTask;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -26,7 +25,7 @@ public class Database extends AsyncTask<Void, Void, String> {
             retval = e.toString();
         }
 
-        String url = "jdbc:postgresql://c.xndr.me:5432/hotmale?user=hotmale&password=bigfart";
+        String url = "jdbc:postgresql://192.155.85.51:5432/hotmale?user=hotmale&password=bigfart";
         Connection conn;
 
         try {
