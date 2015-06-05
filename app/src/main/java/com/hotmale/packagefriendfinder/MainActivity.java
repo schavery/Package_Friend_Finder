@@ -2,6 +2,7 @@ package com.hotmale.packagefriendfinder;
 
 import java.util.Locale;
 
+import android.app.Notification;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -21,14 +22,6 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
@@ -41,7 +34,6 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         // Create the adapter that will return a fragment for each of the
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -50,12 +42,41 @@ public class MainActivity extends ActionBarActivity {
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        // Tab setup.
+        final ActionBar actionBar = getSupportActionBar();
+
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+        ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+                mViewPager.setCurrentItem(tab.getPosition());
+            }
+
+            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {}
+
+            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {}
+        };
+
+        for(int ii = 0; ii < mSectionsPagerAdapter.getCount(); ii++) {
+            actionBar.addTab(
+                    actionBar.newTab()
+                            .setText(mSectionsPagerAdapter.getPageTitle(ii))
+                            .setTabListener(tabListener));
+        }
+
+        mViewPager.setOnPageChangeListener(
+                new ViewPager.SimpleOnPageChangeListener() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        getSupportActionBar().setSelectedNavigationItem(position);
+                    }
+                }
+        );
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Disable menu.
 //        getMenuInflater().inflate(R.menu.menu_main, menu);
         return false;
     }
