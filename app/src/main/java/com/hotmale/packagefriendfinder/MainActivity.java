@@ -2,6 +2,7 @@ package com.hotmale.packagefriendfinder;
 
 import java.util.Locale;
 import android.app.Notification;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -89,6 +90,8 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
@@ -111,8 +114,8 @@ public class MainActivity extends ActionBarActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             if (position == 0) {
-                FrontButt fb = new FrontButt();
-                return (Fragment) fb;
+                Friends fb = new Friends();
+                return fb;
             } else {
                 return PlaceholderFragment.newInstance(position + 1);
             }
