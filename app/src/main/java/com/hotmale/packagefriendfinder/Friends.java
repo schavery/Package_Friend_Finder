@@ -18,12 +18,12 @@ import java.util.ArrayList;
  * Created by savery on 6/3/15.
  * Same deal.
  */
-public class FrontButt extends Fragment implements AsyncResponse {
+public class Friends extends Fragment implements AsyncResponse {
 
     Database db;
     Button b;
 
-    SimpleCursorAdapter mAdapter;
+//    SimpleCursorAdapter mAdapter;
 
     public void processFinish(String output) {}
 
