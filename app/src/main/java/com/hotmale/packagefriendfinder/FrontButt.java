@@ -1,15 +1,18 @@
 package com.hotmale.packagefriendfinder;
 
-import android.app.ActionBar;
-import android.app.ListActivity;
-import android.os.Bundle;
+import android.app.Activity;
 import android.support.v4.app.Fragment;
+import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.SimpleCursorAdapter;
+
+import java.util.ArrayList;
 
 /**
  * Created by savery on 6/3/15.
@@ -17,11 +20,20 @@ import android.widget.ProgressBar;
  */
 public class FrontButt extends Fragment implements AsyncResponse {
 
+    Database db;
     Button b;
-    Database db = new Database();
 
-    public void processFinish(String output) {
-        b.setText(output);
+    SimpleCursorAdapter mAdapter;
+
+    public void processFinish(String output) {}
+
+    // XXX
+    public void processFinish(ArrayList<String> output) {}
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        db = new Database(activity);
     }
 
     public View onCreateView(LayoutInflater inflater,
