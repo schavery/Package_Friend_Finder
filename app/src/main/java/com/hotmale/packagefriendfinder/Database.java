@@ -4,20 +4,23 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.util.Log;
+
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Created by savery on 6/3/15.
  * Now it's no longer default.
  */
-public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<String>>
-    implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<String>> {
 
     SharedPreferences sharedPref;
     int localUserID;
@@ -33,12 +36,9 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
         localUserID = Integer.parseInt(sharedPref.getString("example_list", ""));
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-
-    }
-
     public enum QueryType {
+        ADDFRIEND,
+        RECOMMEND,
         USERLIST, // get all the user information to create intro list fragment
         MUTUALFRIENDS, // get list of friends of your friend
         DELIVERIES // use to get active deliveries
@@ -64,9 +64,13 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
             conn = DriverManager.getConnection(url);
             PreparedStatement ps = null;
 
+            QueryType firstQ = queryTypes[0];
+
             for(QueryType qt : queryTypes) {
                 switch(qt) {
                     case USERLIST: {
+                        // prep for the results
+                        getUserID();
                         ps = conn.prepareStatement("SELECT * FROM users");
                         break;
                     }
@@ -94,15 +98,15 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                 while (rs.next()) {
                     switch(qt) {
                         case USERLIST: {
-                            String p;
-                            p = rs.getString("name");
-                            al.add(p);
 
-                            getUserID();
+                            if(rs.getInt("id") != localUserID) {
+                                // we'll parse this later.
+                                al.add(rs.getString("id") + ',' + rs.getString("name"));
+                            }
 
                             // we'll have to loop through the list again.
                             if(rs.getInt("id") == localUserID) {
-                                al.add("FRIENDS: " + rs.getString("friends"));
+                                al.add("XPQ" + rs.getString("friends"));
                             }
 
                             break;
@@ -117,10 +121,12 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                             List<String> idList = Arrays.asList(ids);
 
                             al.addAll(idList);
+                            break;
                         }
 
                         case DELIVERIES: {
                             al.add(rs.getString("status"));
+                            break;
                         }
                     }
                 }
@@ -128,11 +134,50 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                 rs.close();
                 ps.close();
                 conn.close();
+
+                // only do first query
+                break;
+            }
+
+            if(firstQ == QueryType.USERLIST) {
+                al = collateFriends(al);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return al;
+    }
+
+    private ArrayList<String> collateFriends(ArrayList<String> al) {
+        String [] friends = new String [al.size() + 1];
+        String friendList = "";
+
+        for(String p : al) {
+            if(p.matches("XPQ.*")) {
+                friendList = p.substring(3);
+            } else {
+                String [] parts = p.split(",");
+                int idx = Integer.parseInt(parts[0]);
+                friends[idx] = parts[1];
+            }
+        }
+
+        Log.d("collator", friendList + '\n');
+
+        if(friendList.length() > 0) {
+            String[] friendIDs = friendList.split(",");
+            for (String fID : friendIDs) {
+                int id = Integer.parseInt(fID);
+                friends[id] = "+" + friends[id];
+            }
+        }
+
+        al.clear();
+        List<String> ls = Arrays.asList(friends);
+        al.addAll(ls);
+        al.removeAll(Collections.singleton(null));
 
         return al;
     }

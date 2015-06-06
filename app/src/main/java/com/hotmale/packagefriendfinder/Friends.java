@@ -1,54 +1,53 @@
 package com.hotmale.packagefriendfinder;
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.SimpleCursorAdapter;
-
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import java.util.ArrayList;
 
 /**
  * Created by savery on 6/3/15.
  * Same deal.
  */
-public class Friends extends Fragment implements AsyncResponse {
+public class Friends extends ListFragment implements AsyncResponse {
+    // XXX implement shared preference on preference change hook.
 
     Database db;
-    Button b;
 
-//    SimpleCursorAdapter mAdapter;
-
+    // unused.
     public void processFinish(String output) {}
 
-    // XXX
-    public void processFinish(ArrayList<String> output) {}
+    public void processFinish(ArrayList<String> output) {
+
+        if(getView() != null) {
+//            ArrayAdapter<String> aa = new FriendArrayAdapter(getActivity(), output);
+//            setListAdapter(aa);
+            ArrayAdapter<String> aa = new ArrayAdapter<>(
+                    getActivity(),
+                    android.R.layout.simple_list_item_1,
+                    output
+            );
+            setListAdapter(aa);
+        }
+    }
+
 
     @Override
     public void onAttach(Activity activity) {
+        // set up the db only when we have a context
         super.onAttach(activity);
         db = new Database(activity);
+        db.execute(Database.QueryType.USERLIST);
     }
 
-    public View onCreateView(LayoutInflater inflater,
-            ViewGroup container,
-            Bundle savedInstanceState) {
-
-        LinearLayout ll = new LinearLayout(getActivity());
-        b = new Button(getActivity());
-        b.setText("Hi there");
-        ll.addView(b);
-
-        db.execute();
-
-        return ll;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,40 +55,54 @@ public class Friends extends Fragment implements AsyncResponse {
         db.delegate = this;
     }
 
-    /*
-    // We'll add this later
-    public class FriendListLoader extends ListActivity {
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        // TODO implement some logic
+    }
+
+
+    public class FriendArrayAdapter extends ArrayAdapter<String> {
+        private final Context ctx;
+        private final ArrayList<String> values;
+
+        public FriendArrayAdapter(Context context, ArrayList<String> al) {
+            super(context, -1, al);
+            this.ctx = context;
+            this.values = al;
+        }
+
         @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+        public View getView(int pos, View convertView, ViewGroup parent) {
+            LayoutInflater li = (LayoutInflater) ctx.getSystemService(
+                    Context.LAYOUT_INFLATER_SERVICE);
 
-            // Create a progress bar to display while the list loads
-            ProgressBar progressBar = new ProgressBar(this);
-            progressBar.setLayoutParams(new ActionBar.LayoutParams(LayoutParams.WRAP_CONTENT,
-                    LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-            progressBar.setIndeterminate(true);
-            getListView().setEmptyView(progressBar);
+            if(convertView == null) {
+                convertView = li.inflate(R.layout.friend_item, parent, false);
+                Log.d("getView", "convertView was null");
+            } else {
+                Log.d("getView", "convertView was not null");
+            }
 
-            // Must add the progress bar to the root of the layout
-            ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
-            root.addView(progressBar);
 
-            // For the cursor adapter, specify which columns go into which views
-            String[] fromColumns = {ContactsContract.Data.DISPLAY_NAME};
-            int[] toViews = {android.R.id.text1}; // The TextView in simple_list_item_1
+            TextView friend = (TextView) convertView.findViewById(R.id.friend_is_friend);
+            TextView name = (TextView) convertView.findViewById(R.id.friend_name);
 
-            // Create an empty adapter we will use to display the loaded data.
-            // We pass null for the cursor, then update it in onLoadFinished()
-            mAdapter = new SimpleCursorAdapter(this,
-                    android.R.layout.simple_list_item_1, null,
-                    fromColumns, toViews, 0);
-            setListAdapter(mAdapter);
+            String friend_name;
+            if(values.get(pos).matches("\\+\\w")) {
+                friend_name = values.get(pos).substring(1);
+                friend.setText("friend");
+            } else {
+                friend_name = values.get(pos);
+                friend.setText("");
+            }
 
-            // Prepare the loader.  Either re-connect with an existing one,
-            // or start a new one.
-            getLoaderManager().initLoader(0, null, this);
+            name.setText(friend_name);
+//            Log.d("ArrayAdapter", "the friend name is " + friend_name);
+
+            return convertView;
         }
     }
-    */
+
 }
 
