@@ -3,6 +3,7 @@ package com.hotmale.packagefriendfinder;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,7 +12,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.util.ArrayList;
+import com.hotmale.packagefriendfinder.Database.Query;
+import com.hotmale.packagefriendfinder.Database.TYPE;
 
 /**
  * Created by savery on 6/3/15.
@@ -45,7 +49,8 @@ public class Friends extends ListFragment implements AsyncResponse {
         // set up the db only when we have a context
         super.onAttach(activity);
         db = new Database(activity);
-        db.execute(Database.QueryType.USERLIST);
+        Query q = db.newQuery(TYPE.USERLIST, null);
+        db.execute(q);
     }
 
 
@@ -58,10 +63,26 @@ public class Friends extends ListFragment implements AsyncResponse {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        // TODO implement some logic
+//        FriendProfile fp = new FriendProfile();
+
+//        String name = (String) getListAdapter().getItem(position);
+
     }
 
 
+    public static class FriendProfile extends Fragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+
+        }
+
+    }
+
+
+    /**
+     * Should allow customization of rows in the friends list.
+     * Doesn't work.
+     */
     public class FriendArrayAdapter extends ArrayAdapter<String> {
         private final Context ctx;
         private final ArrayList<String> values;

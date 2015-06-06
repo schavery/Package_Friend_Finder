@@ -20,7 +20,7 @@ import java.util.List;
  * Created by savery on 6/3/15.
  * Now it's no longer default.
  */
-public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<String>> {
+public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>> {
 
     SharedPreferences sharedPref;
     int localUserID;
@@ -36,18 +36,34 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
         localUserID = Integer.parseInt(sharedPref.getString("example_list", ""));
     }
 
-    public enum QueryType {
+    public enum TYPE {
         ADDFRIEND,
         RECOMMEND,
+        GETBYNAME,
         USERLIST, // get all the user information to create intro list fragment
         MUTUALFRIENDS, // get list of friends of your friend
         DELIVERIES // use to get active deliveries
         //, ...
     }
 
+    public class Query {
+
+        protected String content;
+        protected TYPE t;
+
+        public Query(TYPE t, String content) {
+            this.content = content;
+            this.t = t;
+        }
+    }
+
+    public Query newQuery(TYPE t, String content) {
+        return new Query(t, content);
+    }
+
     public AsyncResponse delegate = null;
 
-    protected ArrayList<String> doInBackground(QueryType... queryTypes) {
+    protected ArrayList<String> doInBackground(Query... queries) {
         ArrayList<String> al = new ArrayList<>();
 
         try {
@@ -64,10 +80,10 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
             conn = DriverManager.getConnection(url);
             PreparedStatement ps = null;
 
-            QueryType firstQ = queryTypes[0];
+            Query firstQ = queries[0];
 
-            for(QueryType qt : queryTypes) {
-                switch(qt) {
+            for(Query q : queries) {
+                switch(q.t) {
                     case USERLIST: {
                         // prep for the results
                         getUserID();
@@ -96,7 +112,7 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                 ResultSet rs = ps.executeQuery();
 
                 while (rs.next()) {
-                    switch(qt) {
+                    switch(q.t) {
                         case USERLIST: {
 
                             if(rs.getInt("id") != localUserID) {
@@ -139,7 +155,7 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                 break;
             }
 
-            if(firstQ == QueryType.USERLIST) {
+            if(firstQ.t == TYPE.USERLIST) {
                 al = collateFriends(al);
             }
 
