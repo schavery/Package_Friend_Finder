@@ -227,6 +227,10 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
     private class UserList {
         public String friendIds;
         public ArrayList<Object> people;
+
+        public UserList() {
+            this.people = new ArrayList<>();
+        }
     }
 
     private ArrayList<Object> setFriends(UserList ul) {

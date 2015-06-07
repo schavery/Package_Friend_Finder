@@ -81,9 +81,8 @@ public class Friends extends ListFragment
         }
 
         if(getView() != null) {
-            Log.i("listadapter", "doing the thing");
-            ArrayAdapter<Friend> aa = new FriendArrayAdapter(getActivity(), af);
-            setListAdapter(aa);
+            FriendArrayAdapter faa = new FriendArrayAdapter(getActivity(), af);
+            setListAdapter(faa);
         }
     }
 
@@ -96,7 +95,11 @@ public class Friends extends ListFragment
         public boolean is_my_friend;
 
         public Friend() {
-            is_my_friend = false;
+            this.is_my_friend = false;
+        }
+
+        public String toString() {
+            return name;
         }
     }
 
@@ -171,7 +174,7 @@ public class Friends extends ListFragment
         private final ArrayList<Friend> values;
 
         public FriendArrayAdapter(Context context, ArrayList<Friend> al) {
-            super(context, -1);
+            super(context, -1, al);
 
             this.ctx = context;
             this.values = al;
@@ -182,9 +185,7 @@ public class Friends extends ListFragment
             LayoutInflater li = (LayoutInflater) ctx.getSystemService(
                     Context.LAYOUT_INFLATER_SERVICE);
 
-            if(convertView == null) {
-                convertView = li.inflate(R.layout.friend_item, parent, false);
-            }
+            convertView = li.inflate(R.layout.friend_item, parent, false);
 
             TextView friend = (TextView) convertView.findViewById(R.id.friend_is_friend);
             TextView name = (TextView) convertView.findViewById(R.id.friend_name);
