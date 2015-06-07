@@ -270,12 +270,14 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
         sIDs = s.split(",");
 
 
-        for(String sID : sIDs) {
-            int id = Integer.parseInt(sID);
+        if(sIDs.length > 0) {
+            for (String sID : sIDs) {
+                int id = Integer.parseInt(sID);
 
-            for(Object o : ul.people) {
-                if(((Friend) o).id == id) {
-                    ((Friend) o).is_my_friend = true;
+                for (Object o : ul.people) {
+                    if (((Friend) o).id == id) {
+                        ((Friend) o).is_my_friend = true;
+                    }
                 }
             }
         }
