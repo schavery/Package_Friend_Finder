@@ -3,21 +3,17 @@ package com.hotmale.packagefriendfinder;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
-import android.app.ActionBar;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -48,17 +44,6 @@ public class SettingsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 //        setupActionBar();
     }
-
-//    /**
-//     * Set up the {@link android.app.ActionBar}, if the API is available.
-//     */
-//    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-//    private void setupActionBar() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-//            // Show the Up button in the action bar.
-//            getActionBar().setDisplayHomeAsUpEnabled(true);
-//        }
-//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

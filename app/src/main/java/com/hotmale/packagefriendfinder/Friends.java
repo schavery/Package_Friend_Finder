@@ -3,6 +3,8 @@ package com.hotmale.packagefriendfinder;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -24,10 +26,23 @@ import com.hotmale.packagefriendfinder.Database.TYPE;
  * Created by savery on 6/3/15.
  * Same deal.
  */
-public class Friends extends ListFragment implements AsyncResponse {
-    // XXX implement shared preference on preference change hook.
+public class Friends extends ListFragment
+        implements AsyncResponse, OnSharedPreferenceChangeListener {
 
     Database db;
+
+    // XXX doesn't fire
+    public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
+        if(key.equals("example_list")) {
+            // then we have updated the user. we need to refresh the list
+            Log.d("fuccboi", "key did match");
+            db = new Database(getActivity());
+            Query q = db.newQuery(TYPE.USERLIST, null);
+            db.execute(q);
+        } else {
+            Log.d("fuccboi", "key didn't match");
+        }
+    }
 
     public void processFinish(Database.QueryResult output) {
 
