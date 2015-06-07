@@ -23,11 +23,15 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
     private SharedPreferences sharedPref;
     private int localUserID;
+    private Context ctx;
+
+    private final String addfriendcontent = " wants to be your friend";
 
     // You have to instantiate the database based on what activity you're
     // loading from
     public Database(Context ctx) {
         sharedPref = PreferenceManager.getDefaultSharedPreferences(ctx);
+        this.ctx = ctx;
     }
 
     private void getUserID() {
@@ -38,7 +42,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
     public enum TYPE {
         ADDFRIEND,
         RECOMMEND,
-        GETBYNAME,
+        ADDFRIENDNOTIFY,
         USERLIST, // get all the user information to create intro list fragment
         MUTUALFRIENDS, // get list of friends of your friend
         DELIVERIES // use to get active deliveries
@@ -132,26 +136,25 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 //                        break;
 //                    }
 
-//                    case GETBYNAME: {
-//                        // content might have a + sign in front.
-//                        String s;
-//                        if(q.content.matches("\\+.*")) {
-//                            s = q.content.substring(1);
-//                        } else {
-//                            s = q.content;
-//                        }
-//
-//                        ps = conn.prepareStatement(
-//                                // XXX why is prepared statement not working?
-//                                "SELECT id FROM users WHERE name='" + s + "'"
-//                        );
-//
-////                        ps.setString(0, s);
-//
-//                        Log.d("ye olde query string", ps.toString());
-//                        break;
-//                    }
+                    case ADDFRIENDNOTIFY: {
+                        ps = conn.prepareStatement(
+                                "INSERT INTO notifications (user_id, status, type, generic) "
+                                + "VALUES (?, false, 'friend', ?)");
 
+                        int target = Integer.parseInt(q.content);
+                        ps.setInt(1, target);
+
+                        getUserID();
+
+                        CharSequence [] titles = ctx.getResources()
+                                .getTextArray(R.array.pref_example_list_titles);
+                        String name = (String) titles[localUserID - 1];
+
+                        ps.setString(2, name + addfriendcontent);
+
+                        Log.d("prepared statement", ps.toString());
+                        break;
+                    }
                 }
 
                 ResultSet rs = ps.executeQuery();
@@ -195,9 +198,10 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 //                            break;
 //                        }
 
-//                        case GETBYNAME: {
-//                            al.add(rs.getString("id"));
-//                        }
+                        case ADDFRIENDNOTIFY: {
+                            // we don't need to return anything.
+                            break;
+                        }
                     }
                 }
 
