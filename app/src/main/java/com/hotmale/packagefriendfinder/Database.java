@@ -12,7 +12,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+
 import com.hotmale.packagefriendfinder.Friends.Friend;
 
 /**
@@ -42,6 +44,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
     public enum TYPE {
         ADDFRIEND,
         RECOMMEND,
+        CHECKUPDATES,
         ADDFRIENDNOTIFY,
         USERLIST, // get all the user information to create intro list fragment
         MUTUALFRIENDS, // get list of friends of your friend
@@ -91,6 +94,8 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
         UserList ul = new UserList(); // maybe there's a better place to put this.
 
+        getUserID();
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -99,7 +104,6 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
         String url = "jdbc:postgresql://192.155.85.51:5432/hotmale?user=hotmale&password=bigfart";
         Connection conn;
-
         Query firstQ = queries[0];
 
         try {
@@ -111,8 +115,6 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
             for(Query q : queries) {
                 switch(q.t) {
                     case USERLIST: {
-                        // we need to have localuserid available later, so we call it now.
-                        getUserID();
 
                         ps = conn.prepareStatement("SELECT * FROM users");
                         break;
@@ -120,8 +122,6 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
                     case MUTUALFRIENDS: {
                         ps = conn.prepareStatement("SELECT friends FROM users WHERE id IN (?, ?)");
-
-                        getUserID();
 
                         // insert parameter
                         ps.setInt(1, localUserID);
@@ -138,13 +138,11 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
                     case ADDFRIENDNOTIFY: {
                         ps = conn.prepareStatement(
-                                "INSERT INTO notifications (user_id, status, type, generic) "
-                                + "VALUES (?, false, 'friend', ?)");
+                                "INSERT INTO notifications (target_id, type, content, source_id) "
+                                + "VALUES (?, 'friend_request', ?, ?)");
 
                         int target = Integer.parseInt(q.content);
                         ps.setInt(1, target);
-
-                        getUserID();
 
                         CharSequence [] titles = ctx.getResources()
                                 .getTextArray(R.array.pref_example_list_titles);
@@ -152,7 +150,19 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
                         ps.setString(2, name + addfriendcontent);
 
-                        Log.d("prepared statement", ps.toString());
+                        ps.setInt(3, localUserID);
+
+                        break;
+                    }
+
+                    case CHECKUPDATES: {
+                        ps = conn.prepareStatement(
+                                "UPDATE notifications SET status = true "
+                                + "WHERE target_id=? AND status=false RETURNING *"
+                        );
+
+                        ps.setInt(1, localUserID);
+
                         break;
                     }
                 }
@@ -200,7 +210,16 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
                         case ADDFRIENDNOTIFY: {
                             // we don't need to return anything.
+                            // XXX throws exception on empty result.
                             break;
+                        }
+
+                        case CHECKUPDATES: {
+                            Notification n = new Notification();
+                            n.type = rs.getString("type");
+                            n.content = rs.getString("content");
+
+                            al.add(n);
                         }
                     }
                 }
@@ -228,7 +247,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
     /**
      * lol more classes
      */
-    private class UserList {
+    public class UserList {
         public String friendIds;
         public ArrayList<Object> people;
 
@@ -236,6 +255,13 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
             this.people = new ArrayList<>();
         }
     }
+
+    public class Notification {
+        public String content;
+        public String type;
+
+    }
+
 
     private ArrayList<Object> setFriends(UserList ul) {
         String [] sIDs;
