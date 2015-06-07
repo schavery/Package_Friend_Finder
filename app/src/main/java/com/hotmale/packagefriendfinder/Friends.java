@@ -2,6 +2,7 @@ package com.hotmale.packagefriendfinder;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -13,6 +14,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import com.hotmale.packagefriendfinder.Database.Query;
 import com.hotmale.packagefriendfinder.Database.TYPE;
@@ -26,19 +29,45 @@ public class Friends extends ListFragment implements AsyncResponse {
 
     Database db;
 
-    // unused.
-    public void processFinish(String output) {}
+    public void processFinish(Database.QueryResult output) {
 
-    public void processFinish(ArrayList<String> output) {
+        switch(output.t) {
+            case USERLIST: {
+                setupAdapter(output.output);
+                break;
+            }
 
+            case GETBYNAME: {
+                startFriendProfile(Integer.parseInt(output.output.get(0)));
+                break;
+            }
+
+        }
+    }
+
+    private void startFriendProfile(int id) {
+//        lastClickedFriend.id = id;
+//        FriendProfile fp = FriendProfile.newInstance(lastClickedFriend);
+        Intent i = new Intent(getActivity(), FriendProfile.class);
+        Bundle extras = i.getExtras();
+        extras.putString("name", lastClickedFriend.name);
+        extras.putInt("id", id);
+        extras.putBoolean("is_my_friend", lastClickedFriend.is_my_friend);
+        startActivity(i);
+    }
+
+    private void setupAdapter(ArrayList<String> arrayList) {
         if(getView() != null) {
-//            ArrayAdapter<String> aa = new FriendArrayAdapter(getActivity(), output);
-//            setListAdapter(aa);
-            ArrayAdapter<String> aa = new ArrayAdapter<>(
-                    getActivity(),
-                    android.R.layout.simple_list_item_1,
-                    output
-            );
+            // these lines will be useful when the custom list adapter works
+            ArrayAdapter<String> aa = new FriendArrayAdapter(getActivity(), arrayList);
+
+            // non-customizable way of doing it
+//            ArrayAdapter<String> aa = new ArrayAdapter<>(
+//                    getActivity(),
+//                    android.R.layout.simple_list_item_1,
+//                    arrayList
+//            );
+
             setListAdapter(aa);
         }
     }
@@ -63,10 +92,23 @@ public class Friends extends ListFragment implements AsyncResponse {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-//        FriendProfile fp = new FriendProfile();
+        String name = (String) getListAdapter().getItem(position);
+        Friend fff = new Friend();
 
-//        String name = (String) getListAdapter().getItem(position);
+        if(name.matches("\\+.*")) {
+            fff.is_my_friend = true;
+            fff.name = name.substring(1);
+        } else {
+            fff.name = name;
+        }
 
+        lastClickedFriend = fff;
+
+        db = new Database(getActivity());
+
+        Query q = db.newQuery(TYPE.GETBYNAME, name);
+
+        db.execute(q);
     }
 
 
@@ -76,7 +118,31 @@ public class Friends extends ListFragment implements AsyncResponse {
 
         }
 
+        // maybe don't use this? start activity instead.
+        public static FriendProfile newInstance(Friend f) {
+            FriendProfile fp = new FriendProfile();
+
+            Bundle args = new Bundle();
+            args.putBoolean("is_friend", f.is_my_friend);
+            args.putInt("id", f.id);
+            args.putString("name", f.name);
+
+            fp.setArguments(args);
+            return fp;
+        }
+
     }
+
+    /**
+     * not the java way. sorry everyone
+     */
+    public class Friend {
+        public String name;
+        public int id;
+        public boolean is_my_friend;
+    }
+
+    private Friend lastClickedFriend;
 
 
     /**
@@ -112,10 +178,10 @@ public class Friends extends ListFragment implements AsyncResponse {
             String friend_name;
             if(values.get(pos).matches("\\+\\w")) {
                 friend_name = values.get(pos).substring(1);
-                friend.setText("friend");
+                friend.setText("Send package");
             } else {
                 friend_name = values.get(pos);
-                friend.setText("");
+                friend.setText("Add friend");
             }
 
             name.setText(friend_name);

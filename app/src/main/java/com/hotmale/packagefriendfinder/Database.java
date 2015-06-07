@@ -20,10 +20,10 @@ import java.util.List;
  * Created by savery on 6/3/15.
  * Now it's no longer default.
  */
-public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>> {
+public class Database extends AsyncTask<Database.Query, Void, Database.QueryResult> {
 
-    SharedPreferences sharedPref;
-    int localUserID;
+    private SharedPreferences sharedPref;
+    private int localUserID;
 
     // You have to instantiate the database based on what activity you're
     // loading from
@@ -61,9 +61,29 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
         return new Query(t, content);
     }
 
+    /**
+     * Wraps the return from a query so we don't look stupid.
+     */
+    public class QueryResult {
+        public ArrayList<String> output;
+        public TYPE t;
+
+        public QueryResult(TYPE t, ArrayList<String> output) {
+            this.output = output;
+            this.t = t;
+        }
+    }
+
+
     public AsyncResponse delegate = null;
 
-    protected ArrayList<String> doInBackground(Query... queries) {
+
+    /**
+     * make all the queries.
+     * @param queries
+     * @return
+     */
+    protected QueryResult doInBackground(Query... queries) {
         ArrayList<String> al = new ArrayList<>();
 
         try {
@@ -75,12 +95,14 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
         String url = "jdbc:postgresql://192.155.85.51:5432/hotmale?user=hotmale&password=bigfart";
         Connection conn;
 
+        Query firstQ = queries[0];
+
         try {
             DriverManager.setLoginTimeout(5);
             conn = DriverManager.getConnection(url);
             PreparedStatement ps = null;
 
-            Query firstQ = queries[0];
+
 
             for(Query q : queries) {
                 switch(q.t) {
@@ -107,6 +129,26 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
                                 "SELECT * FROM deliveries WHERE status != \"done\"");
                         break;
                     }
+
+                    case GETBYNAME: {
+                        // content might have a + sign in front.
+                        String s;
+                        if(q.content.matches("\\+.*")) {
+                            s = q.content.substring(1);
+                        } else {
+                            s = q.content;
+                        }
+
+                        ps = conn.prepareStatement(
+                                "SELECT id FROM users WHERE name='" + s + "'"
+                        );
+
+//                        ps.setString(0, s);
+
+                        Log.d("ye olde query string", ps.toString());
+                        break;
+                    }
+
                 }
 
                 ResultSet rs = ps.executeQuery();
@@ -122,6 +164,7 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
 
                             // we'll have to loop through the list again.
                             if(rs.getInt("id") == localUserID) {
+                                // xpq is just a string you wont find by chance
                                 al.add("XPQ" + rs.getString("friends"));
                             }
 
@@ -144,6 +187,10 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
                             al.add(rs.getString("status"));
                             break;
                         }
+
+                        case GETBYNAME: {
+                            al.add(rs.getString("id"));
+                        }
                     }
                 }
 
@@ -163,7 +210,7 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
             e.printStackTrace();
         }
 
-        return al;
+        return new QueryResult(firstQ.t, al);
     }
 
     private ArrayList<String> collateFriends(ArrayList<String> al) {
@@ -199,7 +246,7 @@ public class Database extends AsyncTask<Database.Query, Void, ArrayList<String>>
     }
 
     @Override
-    protected void onPostExecute(ArrayList<String> value) {
+    protected void onPostExecute(QueryResult value) {
         delegate.processFinish(value);
     }
 }
