@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PackageFriendFinder.iml" filepath="$PROJECT_DIR$/PackageFriendFinder.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Package_Friend_Finder.iml" filepath="$PROJECT_DIR$/Package_Friend_Finder.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

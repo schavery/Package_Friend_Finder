@@ -1,6 +1,8 @@
 package com.hotmale.packagefriendfinder;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -46,6 +48,11 @@ public class Friends extends Fragment implements AsyncResponse {
         ll.addView(b);
 
         db.execute();
+
+        // Issues here on getActivity. Why?
+        mServiceIntent = new Intent(getActivity(), BackgroundService.class);
+        mServiceIntent.setData(Uri.parse("unseen"));
+        getActivity().startService(mServiceIntent);
 
         return ll;
     }

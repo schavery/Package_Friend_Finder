@@ -21,6 +21,7 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
 
     SharedPreferences sharedPref;
     int localUserID;
+    String status;
 
     // You have to instantiate the database based on what activity you're
     // loading from
@@ -41,7 +42,8 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
     public enum QueryType {
         USERLIST, // get all the user information to create intro list fragment
         MUTUALFRIENDS, // get list of friends of your friend
-        DELIVERIES // use to get active deliveries
+        DELIVERIES, // use to get active deliveries
+        NOTIFICATIONS // check for notifications
         //, ...
     }
 
@@ -87,6 +89,12 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                                 "SELECT * FROM deliveries WHERE status != \"done\"");
                         break;
                     }
+                    case NOTIFICATIONS: {
+                        // look for unseen
+                        ps = conn.prepareStatement(
+                                "SELECT * FROM notifications WHERE status = \"unseen\" ");
+                        break;
+                    }
                 }
 
                 ResultSet rs = ps.executeQuery();
@@ -122,6 +130,14 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
                         case DELIVERIES: {
                             al.add(rs.getString("status"));
                         }
+                        case NOTIFICATIONS: {
+                            // Check for the new values in the table
+                            if(rs.getInt("id") == localUserID) {
+                                status = "unseen";
+                            }
+                            else
+                                status = "seen";
+                        }
                     }
                 }
 
@@ -140,5 +156,12 @@ public class Database extends AsyncTask<Database.QueryType, Void, ArrayList<Stri
     @Override
     protected void onPostExecute(ArrayList<String> value) {
         delegate.processFinish(value);
+    }
+    protected boolean checkNotifications() {
+        execute(QueryType.NOTIFICATIONS);
+        if(status == "unseen")
+            return true;
+        else
+            return false;
     }
 }

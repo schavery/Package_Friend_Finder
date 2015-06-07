@@ -3,6 +3,7 @@ package com.hotmale.packagefriendfinder;
 import java.util.Locale;
 import android.app.Notification;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -28,7 +29,8 @@ public class MainActivity extends ActionBarActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-
+    //mServiceIntent = new Intent(getActivity(), BackgroundService.class);
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +74,9 @@ public class MainActivity extends ActionBarActivity {
                     }
                 }
         );
+
+
+        
     }
 
 
