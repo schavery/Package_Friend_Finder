@@ -57,16 +57,6 @@ public class Friends extends ListFragment
         }
     }
 
-//    private void startFriendProfile(int id) {
-////        lastClickedFriend.id = id;
-////        FriendProfile fp = FriendProfile.newInstance(lastClickedFriend);
-//        Intent i = new Intent(getActivity(), FriendProfile.class);
-//        Bundle extras = i.getExtras();
-//        extras.putString("name", lastClickedFriend.name);
-//        extras.putInt("id", id);
-//        extras.putBoolean("is_my_friend", lastClickedFriend.is_my_friend);
-//        startActivity(i);
-//    }
 
     private void setupAdapter(ArrayList<Object> arrayList) {
         // turn the objects into friends.
