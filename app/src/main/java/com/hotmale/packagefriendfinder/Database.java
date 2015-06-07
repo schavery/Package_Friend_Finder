@@ -267,10 +267,10 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
         String [] sIDs;
 
         String s = ul.friendIds.replaceAll("\\s+", "");
-        sIDs = s.split(",");
 
+        if(s.length() > 0) {
+            sIDs = s.split(",");
 
-        if(sIDs.length > 0) {
             for (String sID : sIDs) {
                 int id = Integer.parseInt(sID);
 
