@@ -166,9 +166,6 @@ public class Friends extends ListFragment implements AsyncResponse {
 
             if(convertView == null) {
                 convertView = li.inflate(R.layout.friend_item, parent, false);
-                Log.d("getView", "convertView was null");
-            } else {
-                Log.d("getView", "convertView was not null");
             }
 
 
@@ -176,7 +173,7 @@ public class Friends extends ListFragment implements AsyncResponse {
             TextView name = (TextView) convertView.findViewById(R.id.friend_name);
 
             String friend_name;
-            if(values.get(pos).matches("\\+\\w")) {
+            if(values.get(pos).matches("\\+\\w+")) {
                 friend_name = values.get(pos).substring(1);
                 friend.setText("Send package");
             } else {
@@ -185,7 +182,6 @@ public class Friends extends ListFragment implements AsyncResponse {
             }
 
             name.setText(friend_name);
-//            Log.d("ArrayAdapter", "the friend name is " + friend_name);
 
             return convertView;
         }
