@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 /**
  * Created by Scott on 6/5/2015.
@@ -46,7 +47,7 @@ public class Background extends IntentService implements AsyncResponse {
             for(Object o : q.output) {
                 Database.Notification n = (Database.Notification) o;
                 switch(n.type) {
-                    case "friend_req": {
+                    case "friend_request": {
                         friendReqNotify(n);
                     }
                 }
@@ -55,6 +56,8 @@ public class Background extends IntentService implements AsyncResponse {
     }
 
     protected void friendReqNotify(Database.Notification n) {
+
+        Log.d("service", "creating notification of type: " + n.type);
 //        NotificationCompat.Action action = new NotificationCompat.Action.Builder(
 //
 //        );
