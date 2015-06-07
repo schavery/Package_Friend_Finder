@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,12 +36,12 @@ public class Friends extends ListFragment
     public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
         if(key.equals("example_list")) {
             // then we have updated the user. we need to refresh the list
-            Log.d("fuccboi", "key did match");
+            Log.d("preference change", "key did match");
             db = new Database(getActivity());
             Query q = db.newQuery(TYPE.USERLIST, null);
             db.execute(q);
         } else {
-            Log.d("fuccboi", "key didn't match");
+            Log.d("preference change", "key didn't match");
         }
     }
 
@@ -52,38 +53,50 @@ public class Friends extends ListFragment
                 break;
             }
 
-            case GETBYNAME: {
-                startFriendProfile(Integer.parseInt(output.output.get(0)));
-                break;
-            }
+//            case GETBYNAME: {
+//                startFriendProfile(Integer.parseInt(output.output.get(0)));
+//                break;
+//            }
 
         }
     }
 
-    private void startFriendProfile(int id) {
-//        lastClickedFriend.id = id;
-//        FriendProfile fp = FriendProfile.newInstance(lastClickedFriend);
-        Intent i = new Intent(getActivity(), FriendProfile.class);
-        Bundle extras = i.getExtras();
-        extras.putString("name", lastClickedFriend.name);
-        extras.putInt("id", id);
-        extras.putBoolean("is_my_friend", lastClickedFriend.is_my_friend);
-        startActivity(i);
+//    private void startFriendProfile(int id) {
+////        lastClickedFriend.id = id;
+////        FriendProfile fp = FriendProfile.newInstance(lastClickedFriend);
+//        Intent i = new Intent(getActivity(), FriendProfile.class);
+//        Bundle extras = i.getExtras();
+//        extras.putString("name", lastClickedFriend.name);
+//        extras.putInt("id", id);
+//        extras.putBoolean("is_my_friend", lastClickedFriend.is_my_friend);
+//        startActivity(i);
+//    }
+
+    private void setupAdapter(ArrayList<Object> arrayList) {
+        // turn the objects into friends.
+        ArrayList<Friend> af = new ArrayList<>();
+
+        for(Object o : arrayList) {
+            af.add((Friend) o);
+        }
+
+        if(getView() != null) {
+            Log.i("listadapter", "doing the thing");
+            ArrayAdapter<Friend> aa = new FriendArrayAdapter(getActivity(), af);
+            setListAdapter(aa);
+        }
     }
 
-    private void setupAdapter(ArrayList<String> arrayList) {
-        if(getView() != null) {
-            // these lines will be useful when the custom list adapter works
-            ArrayAdapter<String> aa = new FriendArrayAdapter(getActivity(), arrayList);
+    /**
+     * not the java way. sorry everyone
+     */
+    public static class Friend {
+        public String name;
+        public int id;
+        public boolean is_my_friend;
 
-            // non-customizable way of doing it
-//            ArrayAdapter<String> aa = new ArrayAdapter<>(
-//                    getActivity(),
-//                    android.R.layout.simple_list_item_1,
-//                    arrayList
-//            );
-
-            setListAdapter(aa);
+        public Friend() {
+            is_my_friend = false;
         }
     }
 
@@ -107,23 +120,23 @@ public class Friends extends ListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        String name = (String) getListAdapter().getItem(position);
-        Friend fff = new Friend();
+//        String name = (String) getListAdapter().getItem(position);
+//        Friend fff = new Friend();
 
-        if(name.matches("\\+.*")) {
-            fff.is_my_friend = true;
-            fff.name = name.substring(1);
-        } else {
-            fff.name = name;
-        }
+//        if(name.matches("\\+.*")) {
+//            fff.is_my_friend = true;
+//            fff.name = name.substring(1);
+//        } else {
+//            fff.name = name;
+//        }
 
-        lastClickedFriend = fff;
+//        lastClickedFriend = fff;
 
-        db = new Database(getActivity());
+//        db = new Database(getActivity());
 
-        Query q = db.newQuery(TYPE.GETBYNAME, name);
+//        Query q = db.newQuery(TYPE.GETBYNAME, name);
 
-        db.execute(q);
+//        db.execute(q);
     }
 
 
@@ -148,28 +161,18 @@ public class Friends extends ListFragment
 
     }
 
-    /**
-     * not the java way. sorry everyone
-     */
-    public class Friend {
-        public String name;
-        public int id;
-        public boolean is_my_friend;
-    }
-
-    private Friend lastClickedFriend;
-
 
     /**
      * Should allow customization of rows in the friends list.
      * Doesn't work.
      */
-    public class FriendArrayAdapter extends ArrayAdapter<String> {
+    public class FriendArrayAdapter extends ArrayAdapter<Friend> {
         private final Context ctx;
-        private final ArrayList<String> values;
+        private final ArrayList<Friend> values;
 
-        public FriendArrayAdapter(Context context, ArrayList<String> al) {
-            super(context, -1, al);
+        public FriendArrayAdapter(Context context, ArrayList<Friend> al) {
+            super(context, -1);
+
             this.ctx = context;
             this.values = al;
         }
@@ -183,20 +186,16 @@ public class Friends extends ListFragment
                 convertView = li.inflate(R.layout.friend_item, parent, false);
             }
 
-
             TextView friend = (TextView) convertView.findViewById(R.id.friend_is_friend);
             TextView name = (TextView) convertView.findViewById(R.id.friend_name);
 
-            String friend_name;
-            if(values.get(pos).matches("\\+\\w+")) {
-                friend_name = values.get(pos).substring(1);
+            name.setText(values.get(pos).name);
+
+            if(values.get(pos).is_my_friend) {
                 friend.setText("Send package");
             } else {
-                friend_name = values.get(pos);
                 friend.setText("Add friend");
             }
-
-            name.setText(friend_name);
 
             return convertView;
         }

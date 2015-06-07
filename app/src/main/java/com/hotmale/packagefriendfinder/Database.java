@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,7 +12,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import com.hotmale.packagefriendfinder.Friends.Friend;
 
 /**
  * Created by savery on 6/3/15.
@@ -65,10 +64,10 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
      * Wraps the return from a query so we don't look stupid.
      */
     public class QueryResult {
-        public ArrayList<String> output;
+        public ArrayList<Object> output;
         public TYPE t;
 
-        public QueryResult(TYPE t, ArrayList<String> output) {
+        public QueryResult(TYPE t, ArrayList<Object> output) {
             this.output = output;
             this.t = t;
         }
@@ -84,7 +83,9 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
      * @return
      */
     protected QueryResult doInBackground(Query... queries) {
-        ArrayList<String> al = new ArrayList<>();
+        ArrayList<Object> al = new ArrayList<>();
+
+        UserList ul = new UserList(); // maybe there's a better place to put this.
 
         try {
             Class.forName("org.postgresql.Driver");
@@ -103,51 +104,53 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
             PreparedStatement ps = null;
 
 
-
             for(Query q : queries) {
                 switch(q.t) {
                     case USERLIST: {
-                        // prep for the results
+                        // we need to have localuserid available later, so we call it now.
                         getUserID();
+
                         ps = conn.prepareStatement("SELECT * FROM users");
                         break;
                     }
 
                     case MUTUALFRIENDS: {
-                        // create statement to insert into
-                        ps = conn.prepareStatement("SELECT friends FROM users WHERE id=?");
+                        ps = conn.prepareStatement("SELECT friends FROM users WHERE id IN (?, ?)");
 
                         getUserID();
 
                         // insert parameter
                         ps.setInt(1, localUserID);
+                        ps.setInt(2, Integer.parseInt(q.content));
+
                         break;
                     }
 
-                    case DELIVERIES: {
-                        ps = conn.prepareStatement(
-                                "SELECT * FROM deliveries WHERE status != \"done\"");
-                        break;
-                    }
+//                    case DELIVERIES: {
+//                        ps = conn.prepareStatement(
+//                                "SELECT * FROM deliveries WHERE status != \"done\"");
+//                        break;
+//                    }
 
-                    case GETBYNAME: {
-                        // content might have a + sign in front.
-                        String s;
-                        if(q.content.matches("\\+.*")) {
-                            s = q.content.substring(1);
-                        } else {
-                            s = q.content;
-                        }
-
-                        ps = conn.prepareStatement(
-                                "SELECT id FROM users WHERE name='" + s + "'"
-                        );
-
-//                        ps.setString(0, s);
-
-                        Log.d("ye olde query string", ps.toString());
-                        break;
-                    }
+//                    case GETBYNAME: {
+//                        // content might have a + sign in front.
+//                        String s;
+//                        if(q.content.matches("\\+.*")) {
+//                            s = q.content.substring(1);
+//                        } else {
+//                            s = q.content;
+//                        }
+//
+//                        ps = conn.prepareStatement(
+//                                // XXX why is prepared statement not working?
+//                                "SELECT id FROM users WHERE name='" + s + "'"
+//                        );
+//
+////                        ps.setString(0, s);
+//
+//                        Log.d("ye olde query string", ps.toString());
+//                        break;
+//                    }
 
                 }
 
@@ -158,39 +161,43 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
                         case USERLIST: {
 
                             if(rs.getInt("id") != localUserID) {
-                                // we'll parse this later.
-                                al.add(rs.getString("id") + ',' + rs.getString("name"));
+                                Friend f = new Friend();
+                                f.id = Integer.parseInt(rs.getString("id"));
+                                f.name = rs.getString("name");
+
+                                ul.people.add(f);
                             }
 
-                            // we'll have to loop through the list again.
+                            // we'll have to loop through the list again,
+                            // to set who is friend.
                             if(rs.getInt("id") == localUserID) {
-                                // xpq is just a string you wont find by chance
-                                al.add("XPQ" + rs.getString("friends"));
+                                ul.friendIds = rs.getString("friends");
                             }
 
                             break;
                         }
 
-                        case MUTUALFRIENDS: {
-                            // this is kinda shitty, you have to make two queries here.
-                            String p;
+//                        case MUTUALFRIENDS: {
+//                            // this is kinda shitty, you have to make two queries here.
+//                            String p;
+//
+//                            p = rs.getString("friends");
+//                            String [] ids = p.split(",");
+//                            String[] unique = new HashSet<String>(Arrays.asList(ids)).toArray(new String[0]);
+//                            List<String> idList = Arrays.asList(unique);
+//
+//                            al.addAll(idList);
+//                            break;
+//                        }
 
-                            p = rs.getString("friends");
-                            String [] ids = p.split(",");
-                            List<String> idList = Arrays.asList(ids);
+//                        case DELIVERIES: {
+//                            al.add(rs.getString("status"));
+//                            break;
+//                        }
 
-                            al.addAll(idList);
-                            break;
-                        }
-
-                        case DELIVERIES: {
-                            al.add(rs.getString("status"));
-                            break;
-                        }
-
-                        case GETBYNAME: {
-                            al.add(rs.getString("id"));
-                        }
+//                        case GETBYNAME: {
+//                            al.add(rs.getString("id"));
+//                        }
                     }
                 }
 
@@ -203,7 +210,8 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
             }
 
             if(firstQ.t == TYPE.USERLIST) {
-                al = collateFriends(al);
+                // sets Friend.is_my_friend in all results
+                al = setFriends(ul);
             }
 
         } catch (Exception e) {
@@ -213,36 +221,32 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
         return new QueryResult(firstQ.t, al);
     }
 
-    private ArrayList<String> collateFriends(ArrayList<String> al) {
-        String [] friends = new String [al.size() + 1];
-        String friendList = "";
+    /**
+     * lol more classes
+     */
+    private class UserList {
+        public String friendIds;
+        public ArrayList<Object> people;
+    }
 
-        for(String p : al) {
-            if(p.matches("XPQ.*")) {
-                friendList = p.substring(3);
-            } else {
-                String [] parts = p.split(",");
-                int idx = Integer.parseInt(parts[0]);
-                friends[idx] = parts[1];
+    private ArrayList<Object> setFriends(UserList ul) {
+        String [] sIDs;
+
+        String s = ul.friendIds.replaceAll("\\s+", "");
+        sIDs = s.split(",");
+
+
+        for(String sID : sIDs) {
+            int id = Integer.parseInt(sID);
+
+            for(Object o : ul.people) {
+                if(((Friend) o).id == id) {
+                    ((Friend) o).is_my_friend = true;
+                }
             }
         }
 
-        Log.d("collator", friendList + '\n');
-
-        if(friendList.length() > 0) {
-            String[] friendIDs = friendList.split(",");
-            for (String fID : friendIDs) {
-                int id = Integer.parseInt(fID);
-                friends[id] = "+" + friends[id];
-            }
-        }
-
-        al.clear();
-        List<String> ls = Arrays.asList(friends);
-        al.addAll(ls);
-        al.removeAll(Collections.singleton(null));
-
-        return al;
+        return ul.people;
     }
 
     @Override
