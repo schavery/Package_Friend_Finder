@@ -6,19 +6,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import com.hotmale.packagefriendfinder.Database.Query;
 import com.hotmale.packagefriendfinder.Database.TYPE;
@@ -123,51 +119,20 @@ public class Friends extends ListFragment
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-//        String name = (String) getListAdapter().getItem(position);
-//        Friend fff = new Friend();
+        Friend f = (Friend) getListAdapter().getItem(position);
 
-//        if(name.matches("\\+.*")) {
-//            fff.is_my_friend = true;
-//            fff.name = name.substring(1);
-//        } else {
-//            fff.name = name;
-//        }
+        Intent i = new Intent(getActivity(), FriendProfile.class);
 
-//        lastClickedFriend = fff;
+        i.putExtra("name", f.name);
+        i.putExtra("id", f.id);
+        i.putExtra("is_my_friend", f.is_my_friend);
 
-//        db = new Database(getActivity());
-
-//        Query q = db.newQuery(TYPE.GETBYNAME, name);
-
-//        db.execute(q);
-    }
-
-
-    public static class FriendProfile extends Fragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-
-        }
-
-        // maybe don't use this? start activity instead.
-        public static FriendProfile newInstance(Friend f) {
-            FriendProfile fp = new FriendProfile();
-
-            Bundle args = new Bundle();
-            args.putBoolean("is_friend", f.is_my_friend);
-            args.putInt("id", f.id);
-            args.putString("name", f.name);
-
-            fp.setArguments(args);
-            return fp;
-        }
-
+        startActivity(i);
     }
 
 
     /**
-     * Should allow customization of rows in the friends list.
-     * Doesn't work.
+     * Customize display of rows in friend list
      */
     public class FriendArrayAdapter extends ArrayAdapter<Friend> {
         private final Context ctx;

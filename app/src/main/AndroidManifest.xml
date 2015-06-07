@@ -27,6 +27,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.hotmale.packagefriendfinder.MainActivity" />
         </activity>
+        <activity
+            android:name=".FriendProfile"
+            android:label="dunno"
+            android:parentActivityName=".MainActivity">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.hotmale.packagefriendfinder.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
