@@ -10,15 +10,15 @@
     <string-array name="pref_example_list_titles">
         <item>Alex</item>
         <item>Steve</item>
-        <item>Scott</item>
         <item>Karl</item>
+        <item>Scott</item>
     </string-array>
+
     <string-array name="pref_example_list_values">
         <item>1</item>
         <item>2</item>
-        <item>4</item>
         <item>3</item>
+        <item>4</item>
     </string-array>
-
 
 </resources>

@@ -43,6 +43,9 @@
         <service
             android:name=".Background"
             android:exported="false"/>
+
+        <receiver android:name=".AcceptFriendRequestReceiver">
+        </receiver>
     </application>
 
 </manifest>

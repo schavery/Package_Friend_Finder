@@ -218,6 +218,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
                             Notification n = new Notification();
                             n.type = rs.getString("type");
                             n.content = rs.getString("content");
+                            n.source = rs.getInt("source_id");
 
                             al.add(n);
                         }
@@ -259,6 +260,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
     public class Notification {
         public String content;
         public String type;
+        public int source;
 
     }
 

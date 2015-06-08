@@ -2,6 +2,9 @@ package com.hotmale.packagefriendfinder;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -18,6 +21,8 @@ import android.util.Log;
 public class Background extends IntentService implements AsyncResponse {
 
     Database db;
+    NotificationCompat.Builder builder;
+    NotificationManager notificationManager;
 
     public Background() {
         super("Background");
@@ -56,44 +61,38 @@ public class Background extends IntentService implements AsyncResponse {
     }
 
     protected void friendReqNotify(Database.Notification n) {
+        Intent acceptFriendRequestI = new Intent(this, AcceptFriendRequestReceiver.class);
 
-        Log.d("service", "creating notification of type: " + n.type);
-//        NotificationCompat.Action action = new NotificationCompat.Action.Builder(
-//
-//        );
+        Bundle b = new Bundle();
+        b.putInt("id", n.source);
+        acceptFriendRequestI.putExtras(b);
 
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.paint)
-                        .setContentTitle("New Friend Request")
-                        .setContentText(n.content)
-//                        .addAction(action);
-;
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, 0, acceptFriendRequestI, PendingIntent.FLAG_CANCEL_CURRENT);
 
-// Creates an explicit intent for an Activity in your app
-//        Intent resultIntent = new Intent(this, ResultActivity.class);
 
-// The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your application to the Home screen.
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
-//        stackBuilder.addParentStack(ResultActivity.class);
-// Adds the Intent that starts the Activity to the top of the stack
-//        stackBuilder.addNextIntent(resultIntent);
-//        PendingIntent resultPendingIntent =
-//                stackBuilder.getPendingIntent(
-//                        0,
-//                        PendingIntent.FLAG_UPDATE_CURRENT
-//                );
-//        mBuilder.setContentIntent(resultPendingIntent);
 
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
-        int mId = 1;
-        mNotificationManager.notify(mId, mBuilder.build());
+        builder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.perm_group_accessibility_features)
+                .setContentTitle("New Friend Request")
+                .setContentText(n.content)
+                .addAction(R.drawable.perm_group_social_info, "Accept", pendingIntent);
+
+
+        notificationManager = (NotificationManager) getSystemService(
+                getApplicationContext().NOTIFICATION_SERVICE);
+
+        notificationManager.notify(n.source, builder.build());
     }
 
+    public void friendReqComplete(int id) {
+        notificationManager = (NotificationManager) getSystemService(
+                getApplicationContext().NOTIFICATION_SERVICE);
+
+        notificationManager.cancel(id);
+
+
+        // do a db
+
+    }
 }
