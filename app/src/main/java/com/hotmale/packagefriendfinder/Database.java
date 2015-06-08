@@ -118,11 +118,11 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
                     case ADDFRIEND: {
                         ps = conn.prepareStatement(
                                 "UPDATE users AS u1 SET friends = CASE "
-                                    + "WHEN u1.id = ? THEN '?,' "
+                                    + "WHEN u1.id = ? THEN ? "
                                     + "|| (SELECT friends FROM users AS u2 "
                                         + "WHERE u2.id = ?"
                                         + "LIMIT 1) "
-                                + "WHEN u1.id = ? THEN '?,' "
+                                + "WHEN u1.id = ? THEN ? "
                                     + "|| (SELECT friends FROM users AS u2 "
                                         + "WHERE u2.id = ? "
                                         + "LIMIT 1) "
@@ -131,12 +131,14 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
                         );
 
                         int otherUser = Integer.parseInt(q.content);
+                        String otherUserWithComma = q.content + ',';
+                        String thisUserWithComma = Integer.toString(localUserID) + ',';
 
                         ps.setInt(1, localUserID);
-                        ps.setInt(2, otherUser);
+                        ps.setString(2, otherUserWithComma);
                         ps.setInt(3, localUserID);
                         ps.setInt(4, otherUser);
-                        ps.setInt(5, localUserID);
+                        ps.setString(5, thisUserWithComma);
                         ps.setInt(6, otherUser);
                         ps.setInt(7, localUserID);
                         ps.setInt(8, otherUser);
@@ -237,7 +239,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 //                            al.add(rs.getString("status"));
 //                            break;
 //                        }
-                            
+
                         case ADDFRIEND:
                         case ADDFRIENDNOTIFY: {
                             // we don't need to return anything.
