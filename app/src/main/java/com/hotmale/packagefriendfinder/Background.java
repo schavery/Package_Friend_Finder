@@ -62,6 +62,7 @@ public class Background extends IntentService implements AsyncResponse {
 
     protected void friendReqNotify(Database.Notification n) {
         Intent acceptFriendRequestI = new Intent(this, AcceptFriendRequestReceiver.class);
+        acceptFriendRequestI.setAction("com.hotmale.packageFriendFinder.CFR");
 
         Bundle b = new Bundle();
         b.putInt("id", n.source);
@@ -83,16 +84,5 @@ public class Background extends IntentService implements AsyncResponse {
                 getApplicationContext().NOTIFICATION_SERVICE);
 
         notificationManager.notify(n.source, builder.build());
-    }
-
-    public void friendReqComplete(int id) {
-        notificationManager = (NotificationManager) getSystemService(
-                getApplicationContext().NOTIFICATION_SERVICE);
-
-        notificationManager.cancel(id);
-
-
-        // do a db
-
     }
 }

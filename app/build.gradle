@@ -16,6 +16,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        // the guide i followed for installing to physical device
+        // said to add this.
+//        debug {
+//            debuggable true
+//        }
+
     }
 }
 

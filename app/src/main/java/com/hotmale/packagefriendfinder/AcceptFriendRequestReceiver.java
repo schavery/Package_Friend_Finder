@@ -1,5 +1,5 @@
 package com.hotmale.packagefriendfinder;
-
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +11,18 @@ import android.content.Intent;
 public class AcceptFriendRequestReceiver extends BroadcastReceiver {
     public void onReceive(Context ctx, Intent intent) {
         int notifyID = intent.getExtras().getInt("id");
-        Background b = new Background();
 
-        b.friendReqComplete(notifyID);
+        NotificationManager notificationManager =
+                (NotificationManager) ctx.getSystemService(ctx.NOTIFICATION_SERVICE);
+
+        notificationManager.cancel(notifyID);
+
+        // do a db
+        Database db = new Database(ctx);
+
+        Database.Query q = db.newQuery(
+                Database.TYPE.ADDFRIEND, Integer.toString(notifyID));
+
+        db.execute(q);
     }
 }

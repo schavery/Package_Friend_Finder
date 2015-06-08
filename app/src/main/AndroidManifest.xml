@@ -45,6 +45,9 @@
             android:exported="false"/>
 
         <receiver android:name=".AcceptFriendRequestReceiver">
+            <intent-filter>
+                <action android:name="com.hotmale.packageFriendFinder.CFR"></action>
+            </intent-filter>
         </receiver>
     </application>
 

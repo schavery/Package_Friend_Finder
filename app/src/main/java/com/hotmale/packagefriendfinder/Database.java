@@ -38,7 +38,7 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
     private void getUserID() {
         // get id local preference
-        localUserID = Integer.parseInt(sharedPref.getString("example_list", ""));
+        localUserID = Integer.parseInt(sharedPref.getString("example_list", "0"));
     }
 
     public enum TYPE {
@@ -114,6 +114,36 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
             for(Query q : queries) {
                 switch(q.t) {
+
+                    case ADDFRIEND: {
+                        ps = conn.prepareStatement(
+                                "UPDATE users AS u1 SET friends = CASE "
+                                    + "WHEN u1.id = ? THEN '?,' "
+                                    + "|| (SELECT friends FROM users AS u2 "
+                                        + "WHERE u2.id = ?"
+                                        + "LIMIT 1) "
+                                + "WHEN u1.id = ? THEN '?,' "
+                                    + "|| (SELECT friends FROM users AS u2 "
+                                        + "WHERE u2.id = ? "
+                                        + "LIMIT 1) "
+                                + "END "
+                                + "WHERE u1.id IN (?, ?) "
+                        );
+
+                        int otherUser = Integer.parseInt(q.content);
+
+                        ps.setInt(1, localUserID);
+                        ps.setInt(2, otherUser);
+                        ps.setInt(3, localUserID);
+                        ps.setInt(4, otherUser);
+                        ps.setInt(5, localUserID);
+                        ps.setInt(6, otherUser);
+                        ps.setInt(7, localUserID);
+                        ps.setInt(8, otherUser);
+
+                        break;
+                    }
+
                     case USERLIST: {
 
                         ps = conn.prepareStatement("SELECT * FROM users");
@@ -207,7 +237,8 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 //                            al.add(rs.getString("status"));
 //                            break;
 //                        }
-
+                            
+                        case ADDFRIEND:
                         case ADDFRIENDNOTIFY: {
                             // we don't need to return anything.
                             // XXX throws exception on empty result.
@@ -289,6 +320,8 @@ public class Database extends AsyncTask<Database.Query, Void, Database.QueryResu
 
     @Override
     protected void onPostExecute(QueryResult value) {
-        delegate.processFinish(value);
+        if(delegate != null) {
+            delegate.processFinish(value);
+        }
     }
 }
