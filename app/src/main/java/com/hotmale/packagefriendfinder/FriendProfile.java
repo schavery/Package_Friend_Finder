@@ -98,5 +98,29 @@ public class FriendProfile extends ActionBarActivity
         };
         add_friend.setOnClickListener(afl);
 
+
+        final Button upRecommend = (Button) findViewById(R.id.recommend_up);
+        View.OnClickListener url = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Recommendation created.",
+                        Toast.LENGTH_SHORT).show();
+
+                v.setEnabled(false);
+
+                // XXX need to do something...
+                // XXX enable + when - clicked and vice versa
+            }
+        };
+        upRecommend.setOnClickListener(url);
+
+
+        final Button downRecommend = (Button) findViewById(R.id.recommend_down);
+        downRecommend.setOnClickListener(url);
+
+
+        // XXX delivery buttons.
+
+
     }
 }
